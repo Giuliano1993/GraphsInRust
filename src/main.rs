@@ -1,4 +1,4 @@
-use std::fmt::Error;
+use std::{fmt::Error, f32::INFINITY};
 
 
 
@@ -46,8 +46,21 @@ impl Graph{
         panic!("No valid node found")
     }
 
-    fn Dijkstra(&self){
+    fn Dijkstra(self){
+        let mut dist: Vec<u32> = vec![];
+        let mut prev: Vec<u32> = vec![];
+        let mut Q: Vec<Node>= vec![];
+        for i in 0..self.nodes.len() {
+            let node = &self.nodes[i].clone();
+            dist[i] = 99999999;
+            prev[i] = 0;
+            Q.push(*node);
+        }
+        dist[0] = 0;
 
+        while Q.len() > 0 {
+            
+        }
     }
 }
 
