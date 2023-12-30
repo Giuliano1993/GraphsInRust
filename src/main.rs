@@ -1,4 +1,4 @@
-use std::{fmt::Error, f32::INFINITY};
+use std::fmt::Error;
 
 
 
@@ -35,32 +35,58 @@ impl Graph{
             position: (0,0)
         }
     }
-
-    fn get_node_by_position(&self, position: (u32,u32))->Result<Node, Error>{
+    
+    fn get_node_by_position(&self, position: (u32,u32))->Option<(Node,usize)>{
         for i in 0..self.nodes.len(){
             if self.nodes[i].position == position{
                 let selected_node = self.nodes[i].clone();
-                return Ok(selected_node)
+                return Some((selected_node,i));
             }
         }
-        panic!("No valid node found")
+        None
     }
 
     fn Dijkstra(self){
         let mut dist: Vec<u32> = vec![];
         let mut prev: Vec<u32> = vec![];
-        let mut Q: Vec<Node>= vec![];
+        let mut unvisited_nodes: Vec<Node>= vec![];
+        let mut current_node_index: usize = 0;
         for i in 0..self.nodes.len() {
             let node = &self.nodes[i].clone();
-            dist[i] = 99999999;
-            prev[i] = 0;
-            Q.push(*node);
+            dist.insert(i, 99999999);
+            prev.insert(i,0);
+            unvisited_nodes.push(*node);
         }
-        dist[0] = 0;
+        dist[current_node_index] = 0;
+        
+        while unvisited_nodes.len() > 0 {
+            let cur_node = self.nodes[current_node_index];
+            let next_node_1 = self.get_node_by_position((cur_node.position.0 + 1, cur_node.position.1));
+            let next_node_2 = self.get_node_by_position((cur_node.position.0, cur_node.position.1 + 1 ));            
+            match next_node_1 {
+                Some(n)=> dist[n.1] = n.0.weight,
+                None=>()
+            }
+            match next_node_2 {
+                Some(n)=> dist[n.1] = n.0.weight,
+                None=>()
+            }
+            match unvisited_nodes.iter().position(|&x| x.position == cur_node.position){
+                Some(position) => {
+                    unvisited_nodes.remove(position);
+                },
+                None => ()
+            } 
+            if next_node_1.is_some() && next_node_2.is_some(){
+                if next_node_1.unwrap().0.weight < next_node_2.unwrap().0.weight {
+                    current_node_index = next_node_1.unwrap().1
+                }else{
+                    current_node_index = next_node_2.unwrap().1
+                }
+            }
+        }
 
-        while Q.len() > 0 {
-            
-        }
+        dbg!(dist);
     }
 }
 
@@ -178,12 +204,53 @@ mod tests{
         let found_node = graph.get_node_by_position((0,0)).unwrap();
         let node = Node::new((0,0),2);
         
-        assert_eq!(found_node, node);
+        assert_eq!(found_node.0, node);
         let found_node = graph.get_node_by_position((12,12)).unwrap();
         let node = Node::new((12,12),3);
         
-        assert_eq!(found_node, node);
+        assert_eq!(found_node.0, node);
 
         
+    }
+    #[test]
+    fn test_dijkstra(){
+        const INPUT: &str = 
+        "2413432311323
+3215453535623
+3255245654254
+3446585845452
+4546657867536
+1438598798454
+4457876987766
+3637877979653
+4654967986887
+4564679986453
+1224686865563
+2546548887735
+4322674655533";
+
+        
+        
+        let output = split_input(INPUT);
+
+        let nodes = nodes_from_vector(output);
+        let graph = Graph::new(nodes);
+
+        graph.Dijkstra();
+
+        
+    }
+
+    #[test]
+    fn test_remove(){
+        let mut num = vec![10, 20, 30, 40, 50];
+
+        // remove [2] (30)
+        num.remove(2);
+
+        println!("num[0]: {}", num[0]);
+        println!("num[1]: {}", num[1]);
+        println!("num[2]: {}", num[2]);
+        println!("num[3]: {}", num[3]);
     }
 }
